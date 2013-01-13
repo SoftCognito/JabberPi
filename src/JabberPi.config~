@@ -1,6 +1,0 @@
-pi.python_interp    = python
-pi.python_exec_dir  = /home/marek
-pi.perl_interp		= perl
-pi.perl_exec_dir	= /home/marek
-pi.ruby_interp		= ruby
-pi.ruby_exec_dir	= /home/marek
