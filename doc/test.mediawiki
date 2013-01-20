@@ -1,0 +1,657 @@
+{{external links|date=July 2012}}
+The '''Model View ViewModel (MVVM)''' is an [[architectural pattern]] used in software engineering that originated from [[Microsoft]] as a specialization of the presentation model design pattern introduced by [[Martin Fowler]].<ref>[http://martinfowler.com/eaaDev/PresentationModel.html The Presentation Model Design Pattern]</ref>  Largely based on the [[model–view–controller]] pattern (MVC), MVVM is targeted at modern UI development platforms which support [[Event-driven programming]], such as [[HTML5]],<ref>{{Cite web
+| author      = Steve Sanderson
+| title       = KnockoutJS
+| url         = http://knockoutjs.com/documentation/observables.html
+}}</ref><ref>{{Cite web
+| author      = Rafael Weinstein
+| title       =  Google mdv
+| url         = http://code.google.com/p/mdv/
+}}</ref> [[Windows Presentation Foundation]] (WPF), [[Silverlight]] and the [[ZK (framework)|ZK framework]]. 
+
+MVVM facilitates a clear separation of the development of the [[graphical user interface]] (either as [[markup language]] or GUI code) from the development of the [[business logic]] or [[back end]] logic known as the model (also known as the data model to distinguish it from the view model). The view model of MVVM is a value converter<ref>{{citeweb|url=http://groups.google.com/group/wpf-disciples/browse_thread/thread/3fe270cd107f184f?pli=1|title=Thought: MVVM eliminates 99% of the need for ValueConverters|author=Google groups}}</ref> meaning that the view model is responsible for exposing the data objects from the model in such a way that those objects are easily managed and consumed. In this respect, the view model is more model than view, and handles most if not all of the view’s display logic (though the demarcation between what functions are handled by which layer is a subject of ongoing discussion<ref>{{citeweb|url=http://groups.google.com/group/wpf-disciples/browse_thread/thread/3fe270cd107f184f/3ede55778f5a45dd|title=Thought: MVVM eliminates 99% of the need for ValueConverters|author=Google groups}}</ref> and exploration). The view model may also implement a [[mediator pattern]] organising access to the backend logic around the set of [[Use case|use cases]] supported by the view.
+
+MVVM was designed to make use of [[data binding]] functions in WPF to better facilitate the separation of view layer development from the rest of the pattern by removing virtually all [[Graphical user interface|GUI]] code (“[[code-behind]]”) from the view layer.<ref name = "JSmith">{{cite web|author= Josh Smith| title=WPF Apps With The Model-View-ViewModel Design| url= http://msdn.microsoft.com/en-us/magazine/dd419663.aspx}}</ref> Instead of requiring [[User experience design|user interface (UXi)]] developers to write GUI code, they can use the framework markup language (e.g., [[XAML]]) and create [[Data binding|bindings]] to the view model, which is written and maintained by application developers. This separation of roles allows interactive designers to focus on UX needs rather than programming or business logic, allowing for the layers of an application to be developed in multiple work streams for higher productivity. Even when a single developer works on the entire code base a proper separation of the view from the model is more productive as the user interface typically changes frequently and late in the development cycle based on end-user feedback.
+
+
+=JHUB1 Project FAQ=
+
+==General==
+===What is D-Bus?===
+===Is JHUB1 stable/finished?===
+===What is an "agent"?===
+===What is a "service"?===
+===How can I start using it?===
+===How can I start making my own agents?===
+===How can I submit a bug or patch?===
+===How can I help in the development?===
+===What is The JHUB1 Project?===
+
+See the How to Contribute section of this site. See more on the [[Project architecture]] page.
+
+===What license is used for the JHUB1 Project, and why was this license chosen?===
+
+The Apache 2.0 license was chosen for JHUB1 Project. For the full text of the license see: http://www.apache.org/licenses/LICENSE-2.0.html
+
+We chose the Apache 2.0 license because it is a very open license which lets anyone create both open source and commercial products on top of our solution. The Apache 2.0 license allows developers to mix our code with their code under basically any license, which gives developers great flexibility in how they reuse our code. This enables JHUB1 to spread the usage, attract potential contributors as well as increase the number of people knowledgeable about JHUB1 APIs.
+
+===How do I get involved?===
+
+See the [[How to Contribute|How to Contribute section]] of this site.
+
+
+== History ==
+[[Microsoft Most Valuable Professional|Microsoft MVP]] Josh Smith reported<ref name = "JSmith" /> that 
+<blockquote>
+"In 2005, John Gossman, currently one of the WPF and Silverlight Architects at Microsoft, unveiled the Model-View-ViewModel (MVVM) pattern on his blog. MVVM is identical to Fowler's Presentation Model, in that both patterns feature an abstraction of a View, which contains a View's state and behavior. Fowler introduced Presentation Model as a means of creating a UI platform-independent abstraction of a View, whereas Gossman introduced MVVM as a standardized way to leverage core features of WPF to simplify the creation of user interfaces. In that sense, I consider MVVM to be a specialization of the more general PM pattern, tailor-made for the WPF and Silverlight platforms."
+</blockquote>
+
+The MVVM pattern was conceived to support WPF and Silverlight, both pieces that debuted with the [[.NET Framework#.NET Framework 3.0|.NET Framework 3.0]] which was released on 21 November 2006. This pattern is now being more broadly applied in other technology domains, much as happened with the earlier MVC or [[Model View Presenter]] (MVP) patterns.
+
+Several Microsoft architects working on WPF have written extensively about MVVM in online media, including creator John Gossman, Microsoft MVP Josh Smith,  and Microsoft Program Manager Karl Shifflett.  
+
+As the understanding of the pattern disseminates through the industry, discussion continues regarding what tools can be developed to support the pattern, selection of where to place different kinds of supporting code in the pattern, the best methods for data binding, and how to expose data within the view model, how appropriate the pattern is for use within JavaScript, and other topics.
+
+More recently the pattern has been described as [[model-view-binder]] (MVB) when implemented outside of the Microsoft stack.<ref name="SMassey">{{cite web|last=Massey|first=Simon|title=Presentation Patterns In ZK|url=http://www.slideshare.net/simbo1905/design-patterns-in-zk-java-mvvm-as-modelviewbinder|accessdate=24 March 2012}}</ref>
+
+= Pattern description =
+Broadly speaking,<ref name = "JSmith" /><ref>{{cite journal|author= John Gossman| title=Tales from the Smart Client: Introduction to Model/View/ViewModel pattern for building WPF apps| url= http://blogs.msdn.com/johngossman/archive/2005/10/08/478683.aspx}}</ref><ref>{{cite web|author = Karl Shifflett|title = Learning WPF M-V-VM.|url = http://karlshifflett.wordpress.com/2008/11/08/learning-wpf-m-v-vm/}}</ref> the model-view-view-model pattern attempts to gain both the advantages of separation of functional development provided by [[model-view-controller|MVC]] as well as leveraging the advantages of [[Data binding|data bindings]] and the framework by binding data as far back (meaning as close to the pure application model) as possible while using the binder, view model, and any business layer’s inherent data checking features to validate any incoming data. The result is that the model and framework drive as much of the operations as possible, eliminating or minimizing application logic which directly manipulates the view (e.g., [[code-behind]]). Whilst the pattern was pioneered at Microsoft, as a pure concept it is independent of any given implementation. As such the pattern can be used in any language and with any presentation framework which provides a declarative [[data binding]] capability. 
+
+Elements of the MVVM pattern include:
+
+'''Model:''' as in the classic MVC pattern, the model refers to either (a) a [[domain model]] which represents the real state content (an object-oriented approach), or (b) the [[data access layer]] that represents that content (a data-centric approach). 
+
+'''View:''' as in the classic MVC pattern, the view refers to all elements displayed by the [[GUI]] such as buttons, labels, and other controls 
+
+'''View model:''' the view model is a “model of the view” meaning it is an abstraction of the view that also serves in mediating between the view and the model which is the target of the [[Data binding|view data bindings]]. It could be seen as a specialized aspect of what would be a controller (in the MVC pattern) that acts as a converter that changes model information into view information and passes commands from the view into the model. The view model exposes public properties, commands, and abstractions.
+The view model has been likened to a conceptual state of the data as opposed to the real state of the data in the model.<ref>{{cite web|author = Pete Weissbrod |title= Model-View-ViewModel Pattern for WPF: Yet another approach.
+| url = http://www.acceptedeclectic.com/2008/01/model-view-viewmodel-pattern-for-wpf.html}}</ref> The term '''"View model"''' is a major cause of confusion in understanding the pattern when compared to the more widely implemented MVC or [[model-view-presenter|MVP]] patterns. The role of the controller or presenter of the other patterns has been substituted with the framework binder (e.g., [[XAML]]) and view model as mediator and/or converter of the model to the binder. 
+
+'''Controller:''' some references for MVVM also include a controller layer or illustrate that the view model is a specialized functional set in parallel with a controller, while [http://karlshifflett.files.wordpress.com/2008/11/wpflobmvvm1.png others do not]. This difference is an ongoing area of discussion regarding the standardization of the MVVM pattern.
+
+'''Binder:''' the use of a declarative databinding and command bind technology is an implicit part of the pattern. Within the Microsoft stack this is the XAML technology.<ref>{{cite web|last=Wildermuth|first=Shawn|title=Windows Presentation Foundation Data Binding: Part 1|url=http://msdn.microsoft.com/en-us/library/aa480224.aspx|publisher=Microsoft|accessdate=24 March 2012}}</ref> Essentially this architectural component frees the developer from being obliged to write boiler plate logic to synchronise the view model and view. It is the organisation of code to make best use of this capability which distinguishes the pattern from both MVC and MVP. When implemented outside of the Microsoft stack the presence of a declarative databinding technology is a key enabler of the pattern.<ref>{{cite web|title=ZK MVVM|url=http://books.zkoss.org/wiki/Small_Talks/2012/February/New_Features_of_ZK_6#ZK_MVVM|publisher=Potix|accessdate=24 March 2012}}</ref><ref name="SMassey"/>
+
+== An implementation of the view model ==
+'''Snippet''': here is a simple implementation of the pattern realized using [[Test-driven_development|TDD]] (test-driven development) on [[Windows_Presentation_Foundation|WPF]] [http://code.msdn.microsoft.com/How-to-implement-MVVM-71a65441 How to implement MVVM (Model-View-ViewModel) in TDD], on [http://code.msdn.microsoft.com Code MSDN].
+
+{| class="pro_table" style="width:50%"
+|+ Table title centered pro_table width:50%
+! 1 column
+! 2 column
+|-
+| Kom0rka 1, wiersz 1
+| Kom0rka 2, wiersz 1
+|-
+| Kom0rka 1, wiersz 2
+| Kom0rka 2, wiersz 2
+|-
+| Kom0rka 1, wiersz 3
+| Kom0rka 2, wiersz 3
+|-
+| Kom0rka 1, wiersz 4
+| Kom0rka 2, wiersz 4
+|}
+
+{| class="pro_table" style="text-align:right"
+|+ Table title centered pro_table
+! 1 column
+! 2 column
+! 3 column
+! 4 column
+|-
+| Kom0rka 1, wiersz 1
+| Kom0rka 2, wiersz 1
+| Kom0rka 2, wiersz 1
+| Kom0rka 2, wiersz 1
+|-
+| Kom0rka 1, wiersz 2
+| Kom0rka 2, wiersz 2
+| Kom0rka 2, wiersz 1
+| Kom0rka 2, wiersz 1
+|-
+| Kom0rka 1, wiersz 3
+| Kom0rka 2, wiersz 3
+| Kom0rka 2, wiersz 1
+| Kom0rka 2, wiersz 1
+|-
+| Kom0rka 1, wiersz 4
+| Kom0rka 2, wiersz 4
+| Kom0rka 2, wiersz 1
+| Kom0rka 2, wiersz 1
+|}
+
+
+{| class="pro_table pro_table-striped"
+|+ Table title centered pro_table pro_table-striped
+! 1 column
+! 2 column
+! 3 column
+! 4 column
+|-
+| Kom0rka 1, wiersz 1
+| Kom0rka 2, wiersz 1
+| Kom0rka 2, wiersz 1
+| Kom0rka 2, wiersz 1
+|-
+| Kom0rka 1, wiersz 2
+| Kom0rka 2, wiersz 2
+| Kom0rka 2, wiersz 1
+| Kom0rka 2, wiersz 1
+|-
+| Kom0rka 1, wiersz 3
+| Kom0rka 2, wiersz 3
+| Kom0rka 2, wiersz 1
+| Kom0rka 2, wiersz 1
+|-
+| Kom0rka 1, wiersz 4
+| Kom0rka 2, wiersz 4
+| Kom0rka 2, wiersz 1
+| Kom0rka 2, wiersz 1
+|}
+
+{| class="pro_table pro_table-bordered"
+|+ Table title centered pro_table pro_table-bordered
+! 1 column
+! 2 column
+! 3 column
+! 4 column
+|-
+| Kom0rka 1, wiersz 1
+| Kom0rka 2, wiersz 1
+| Kom0rka 2, wiersz 1
+| Kom0rka 2, wiersz 1
+|-
+| Kom0rka 1, wiersz 2
+| Kom0rka 2, wiersz 2
+| Kom0rka 2, wiersz 1
+| Kom0rka 2, wiersz 1
+|-
+| Kom0rka 1, wiersz 3
+| Kom0rka 2, wiersz 3
+| Kom0rka 2, wiersz 1
+| Kom0rka 2, wiersz 1
+|-
+| Kom0rka 1, wiersz 4
+| Kom0rka 2, wiersz 4
+| Kom0rka 2, wiersz 1
+| Kom0rka 2, wiersz 1
+|}
+
+{| class="pro_table pro_table-bordered pro_table-striped"
+|+ Table title centered pro_table pro_table-bordered pro_table-striped
+! 1 column
+! 2 column
+! 3 column
+! 4 column
+|-
+| Kom0rka 1, wiersz 1
+| Kom0rka 2, wiersz 1
+| Kom0rka 2, wiersz 1
+| Kom0rka 2, wiersz 1
+|-
+| Kom0rka 1, wiersz 2
+| Kom0rka 2, wiersz 2
+| Kom0rka 2, wiersz 1
+| Kom0rka 2, wiersz 1
+|-
+| Kom0rka 1, wiersz 3
+| Kom0rka 2, wiersz 3
+| Kom0rka 2, wiersz 1
+| Kom0rka 2, wiersz 1
+|-
+| Kom0rka 1, wiersz 4
+| Kom0rka 2, wiersz 4
+| Kom0rka 2, wiersz 1
+| Kom0rka 2, wiersz 1
+|}
+
+An implementation of the view model in [[C_Sharp_(programming_language)|C#]].
+<source lang="csharp">
+public class CustomerViewModel
+﻿  : ViewModelBase<CustomerViewModel>
+{
+﻿  private readonly IDialogService dialogService;
+﻿  private Customer currentCustomer;
+﻿  private int i;
+
+﻿  public CustomerViewModel()
+﻿  {
+﻿  ﻿  CustomerList = new ObservableCollection<Customer>();
+﻿  ﻿  AddNewCustomer = new RelayCommand(PerformAddNewCustomer);
+﻿  }
+
+﻿  public CustomerViewModel(IDialogService dialogService)
+﻿  ﻿  : this()
+﻿  {
+﻿  ﻿  this.dialogService = dialogService;
+﻿  }
+
+﻿  public Customer CurrentCustomer
+﻿  {
+﻿  ﻿  get { return currentCustomer; }
+
+﻿  ﻿  set { SetProperty(ref currentCustomer, value, x => x.CurrentCustomer); }
+﻿  }
+
+﻿  public ObservableCollection<Customer> CustomerList
+﻿  {
+﻿  ﻿  get;
+﻿  ﻿  private set;
+﻿  }
+
+﻿  public ICommand AddNewCustomer { get; private set; }
+
+﻿  private void PerformAddNewCustomer()
+﻿  {
+﻿  ﻿  CustomerList.Add(new Customer { Name = "Name" + i });
+﻿  ﻿  i++;
+
+﻿  ﻿  if (dialogService != null)
+﻿  ﻿  {
+﻿  ﻿  ﻿  dialogService.Show("Customer added");
+﻿  ﻿  }
+﻿  }
+}
+</source>
+
+'''Snippet''': here is a simple implementation of the pattern realized in Java using the [[ZK (framework)|ZK framework]] from the [https://github.com/simbo1905/ZkToDo2/blob/b97b353d399ad012577bef7f880f9e3167ed70a3/src/main/java/org/zkforge/zktodo2/ZkToDoViewModel.java ZK ToDo2] patterns demo application:
+<source lang="java">
+public class ZkToDoViewModel  {
+
+﻿  protected ReminderService reminderService; 
+
+﻿  public void setReminderService(ReminderService reminderService) {
+﻿  ﻿  this.reminderService = reminderService;
+﻿  }
+
+﻿  protected ListModelList<Reminder> reminders = new ListModelList<Reminder>();
+
+﻿  public ListModelList<Reminder> getReminders() {
+﻿  ﻿  List<Reminder> rs = this.reminderService.findAll();
+﻿  ﻿  this.reminders.clear();
+﻿  ﻿  this.reminders.addAll(rs);
+﻿  ﻿  return this.reminders;
+﻿  }
+
+﻿  protected Reminder selectedReminder = new Reminder();
+
+﻿  public Reminder getSelectedReminder() {
+﻿  ﻿  return this.selectedReminder;
+﻿  }
+
+﻿  @NotifyChange
+﻿  public void setSelectedReminder(Reminder reminder) {
+﻿  ﻿  this.selectedReminder = reminder;
+﻿  }
+
+﻿  @Command
+﻿  @NotifyChange({"reminders","selectedReminder"})
+﻿  public void delete() {
+﻿  ﻿  if( this.selectedReminder.getId() != null ){
+﻿  ﻿  ﻿  try {
+﻿  ﻿  ﻿  ﻿  this.reminderService.delete(selectedReminder);
+﻿  ﻿  ﻿  ﻿  this.selectedReminder = new Reminder();
+﻿  ﻿  ﻿  } catch (EntityNotFoundException e) {
+﻿  ﻿  ﻿  ﻿  // no doubt someone else deleted it at the same time. nothing to do. 
+﻿  ﻿  ﻿  }
+﻿  ﻿  }
+﻿  }
+
+﻿  @Command
+﻿  @NotifyChange({"reminders","selectedReminder"})
+﻿  public void save() {
+﻿  ﻿  if( this.selectedReminder.getId() != null ){
+﻿  ﻿  ﻿  try {
+﻿  ﻿  ﻿  ﻿  this.reminderService.merge(selectedReminder);
+﻿  ﻿  ﻿  } catch (EntityNotFoundException e) {
+﻿  ﻿  ﻿  ﻿  // hum. some else deleted this. should really send this
+﻿  ﻿  ﻿  ﻿  // up to the user and ask them to reload the page. 
+﻿  ﻿  ﻿  ﻿  e.printStackTrace();
+﻿  ﻿  ﻿  }
+﻿  ﻿  } else {
+﻿  ﻿  ﻿  this.reminderService.persist(this.selectedReminder);
+﻿  ﻿  }
+﻿  }
+
+﻿  @Command
+﻿  @NotifyChange({"reminders","selectedReminder"})
+﻿  public void create() {
+﻿  ﻿  this.selectedReminder = new Reminder();
+﻿  }
+}
+</source>
+
+=== Timeline ===
+
+- November 2010 - The Microsoft patterns & practices team published guidance on using MVVM, under the name [http://microsoft.com/prism Prism v4].
+
+==== Criticism ====
+
+A criticism of the pattern comes from MVVM creator John Gossman himself,<ref>{{cite web| author = John Gossman| title = Tales from the Smart Client: Advantages and disadvantages of M-V-VM.| url = http://blogs.msdn.com/johngossman/archive/2006/03/04/543695.aspx}}</ref> who points out that the overhead in implementing MVVM is “overkill” for simple UI operations.  He also states that for larger applications, generalizing the View layer becomes more difficult.  Moreover, he illustrates that data binding, if not managed well, can result in considerable memory consumption in an application.
+
+= Microsoft .NET Open source MVVM frameworks Microsoft .NET Open source MVVM frameworks =
+<div class="references-1column">
+* {{Cite web
+| author      = IaxiomI
+| title       = Carbon MVVM
+| url         = http://carbonmvvm.codeplex.com/
+}}
+* {{Cite web
+| author      = IdeaBlade
+| title       = Cocktail
+| url         = http://cocktail.ideablade.com/
+}}
+* {{Cite web
+| author      = Josh Smith
+| title       = MVVM Foundation
+| url         = http://mvvmfoundation.codeplex.com
+}}
+* {{Cite web
+| author      = Sacha Barber
+| title       = Cinch
+| url         = http://cinch.codeplex.com
+}}
+* {{Cite web
+| author      = Daniel Vaughan
+| title       = Calcium SDK
+| url         = http://www.calciumsdk.net
+}}
+* {{Cite web
+| author      = Karl Shifflett
+| title       = Ocean
+| url         = http://karlshifflett.wordpress.com
+}}
+* {{Cite web
+| author      = Tony Sneed
+| title       = Simple MVVM Toolkit
+| url         = http://simplemvvmtoolkit.codeplex.com
+}}
+* {{Cite web
+| author      = Laurent Bugnion
+| title       = MVVM Light Toolkit
+| url         = http://www.galasoft.ch/mvvm/getstarted/
+}}
+* {{Cite web
+| author      = Eye{{Not a typo|.}}Soft
+| title       = Hyperion SDK
+| url         = http://hyperionsdk.codeplex.com
+}}
+* {{Cite web
+| author      = Lester Lobo
+| title       = CoreMVVM
+| url         = http://coremvvm.codeplex.com/
+}}
+* {{Cite web
+| author   = Paul Betts
+| title       = ReactiveUI
+| url         = http://www.reactiveui.net
+}}
+* {{Cite web
+| author      = Rob Eisenberg
+| title       = Caliburn
+| url         = http://www.caliburnproject.org/
+}}
+* {{Cite web
+| author      = Rob Eisenberg
+| title       = Caliburn Micro
+| url         = http://caliburnmicro.codeplex.com/
+}}
+* {{Cite web
+| author      = William e Kempf
+| title       = Onyx
+| url         = http://wpfonyx.codeplex.com/
+}}
+* {{Cite web
+| author      = Peter O’Hanlon
+| title       = GoldLight
+| url         = http://goldlight.codeplex.com/
+}}
+* {{Cite web
+| author      = jbe
+| title       = WPF Application Framework (WAF)
+| url         = http://waf.codeplex.com
+}}
+* {{Cite web
+| author      = WPF Team
+| title       = WPF Model-View-ViewModel Toolkit
+| url         = http://wpf.codeplex.com/wikipage?title=WPF%20Model-View-ViewModel%20Toolkit&referringTitle=Home
+}}
+* {{Cite web
+| author      = Michael L Perry
+| title       = Update Controls
+| url         = http://updatecontrols.codeplex.com/
+}}
+* {{Cite web
+| author      = Steve Sanderson
+| title       = KnockoutJS
+| url         = http://knockoutjs.com/documentation/observables.html
+}}
+* {{Cite web
+| author      = Geert van Horrik
+| title       = Catel
+| url         = http://catel.codeplex.com
+}}
+* {{Cite web
+| author      = Jeremy Likness
+| title       = Jounce
+| url         = http://jounce.codeplex.com
+}}
+* {{Cite web
+| author      = Xomega.Net
+| title       = Xomega Framework
+| url         = http://xomfwk.codeplex.com
+}}
+* {{Cite web
+| author      = Markus Egger, Markus Egger Inc., CODE Magazine, EPS Software Corp.
+| title       = Code Framework
+| url         = http://codeframework.codeplex.com/
+}}
+* {{Cite web
+| author      = Volkov V.S
+| title       = Mugen MVVM Toolkit
+| url         = http://mugenmvvmtoolkit.codeplex.com/
+}}
+* {{Cite web
+| author      = Riana Rambonimanana
+| title       = Lakana
+| url         = http://lakana.codeplex.com/
+}}
+</div>
+
+== Free MVVM frameworks ==
+<div class="references-1column">
+* {{Cite web
+| author      = 2sky (Visual Studio Partner)
+| title       = Vidyano
+| url         = http://www.vidyano.com
+}}
+</div>
+
+== Commercial MVVM frameworks ==
+<div class="references-1column">
+* {{Cite web
+| author      = Intersoft Solutions (Visual Studio Partner)
+| title       = ClientUI
+| url         = http://www.clientui.com/
+}}
+* {{Cite web
+| author      = MVVM framework for Unity 3D
+| title       = NData / EZData / iData
+| url         = http://www.unity3d.com/
+}}
+</div>
+
+=== Java MVVM frameworks ===
+<div class="references-1column">
+* {{Cite web
+| author      = Potix
+| title       = ZK
+| url         = http://www.zkoss.org
+}}
+* {{Cite web
+| author      = Michael Fazio
+| title       = Bambi MVVM for Vaadin
+| url         = http://code.google.com/p/bambi/
+}}
+</div>
+
+====See also====
+* [[Model-view-controller]]
+* [[Model-view-presenter]]
+
+===== References =====
+<references/>
+
+====== External links ======
+<div class="references-1column">
+* {{Cite web
+| author      = [[Martin Fowler]]
+| title       = Presentation Model
+| url         = http://martinfowler.com/eaaDev/PresentationModel.html
+}}
+* {{Cite web
+| author      = Josh Smith
+| title       = WPF Apps With The Model-View-ViewModel Design Pattern
+| url         = http://msdn.microsoft.com/en-us/magazine/dd419663.aspx
+}}
+* {{Cite web
+| author      = Josh Smith
+| title       = Advanced MVVM
+| url         = http://advancedmvvm.com
+}}
+* {{Cite web
+| author      = Jason Dolinger
+| title       = A tutorial refactoring a traditional event-handling application to use MVVM and Commands.
+| url         = http://blog.lab49.com/archives/2650
+}}
+
+* {{Cite web
+| author      = Kishor Aher
+| title       = Attaching Routed Event to Command (Zero code behind M-V-VM)
+| url         = http://kishordaher.wordpress.com/2009/07/18/routedevent-to-command-action-behavior-blend-3/
+}}
+* {{Cite web
+| author      = John Gossman
+| title       = Tales from the Smart Client: Introduction to Model/View/ViewModel pattern for building WPF apps
+| url         = http://blogs.msdn.com/johngossman/archive/2005/10/08/478683.aspx
+}}
+* {{Cite web
+| author      = Karl Shifflett
+| title       = Learning WPF M-V-VM.
+| url         = http://karlshifflett.wordpress.com/2008/11/08/learning-wpf-m-v-vm/
+}}
+* {{Cite web
+| author      = Pete Weissbrod
+| title       = Model-View-ViewModel Pattern for WPF: Yet another approach.
+| url         = http://www.acceptedeclectic.com/2008/01/model-view-viewmodel-pattern-for-wpf.html
+}}
+* {{Cite web
+| author      = John Gossman
+| title       = Tales from the Smart Client: Advantages and disadvantages of M-V-VM.
+| url         = http://blogs.msdn.com/johngossman/archive/2006/03/04/543695.aspx
+}}
+* {{Cite web
+| author      = Jason Rainwater
+| title       = MVVM, providing the Association of View to ViewModel
+| url         = http://blogs.msdn.com/b/davihard/archive/2010/05/10/repost-mvvm-providing-the-association-of-view-to-viewmodel.aspx}}
+* {{Cite web
+| author      = Julian Dominguez
+| title       = Presentation Model pattern and the Composite Application Guidance (aka Prism)
+| url         = http://blogs.southworks.net/jdominguez/category/presentation-model/
+}}
+* {{Cite web
+| author      = Nikhil Kotari
+| title       = ViewModel Pattern in Silverlight using Behaviors
+| url         = http://www.nikhilk.net/Silverlight-ViewModel-Pattern.aspx
+}}
+* {{Cite web
+| author      = Glenn Block
+| title       = The spirit of MVVM (ViewModel), it's not a code counting exercise.
+| url         = http://blogs.msdn.com/gblock/archive/2009/08/03/the-spirit-of-mvvm-viewmodel-it-s-not-a-code-counting-exercise.aspx
+}}
+* {{Cite web
+| author      = Rob Eisenberg
+| title       = Study in MVVM
+| url         = http://www.caliburnproject.org/
+}}
+* {{Cite web
+| author      = Xomega Team
+| title       = Take MVVM to the Next Level with Xomega Framework
+| url         = http://www.codeproject.com/KB/WPF/xomfwk.aspx
+}}
+
+* {{Cite web
+| author      = Geert van Horrik
+| title       = Catel - Part 0 of n: Why choose Catel?
+| url         = http://www.codeproject.com/KB/WPF/CatelPart0WhyChoose.aspx
+}}
+* {{Cite web
+| author      = Geert van Horrik
+| title       = Catel - Part 1 of n: Data Handling the Way it Should
+| url         = http://www.codeproject.com/KB/WPF/Catel.aspx
+}}
+* {{Cite web
+| author      = Geert van Horrik
+| title       = Catel - Part 2 of n: Using WPF Controls and Themes
+| url         = http://www.codeproject.com/KB/WPF/Catel_Part2.aspx
+}}
+* {{Cite web
+| author      = Geert van Horrik
+| title       = Catel - Part 3 of n: The MVVM Framework
+| url         = http://www.codeproject.com/Articles/129920/Catel-Part-3-of-n-The-MVVM-Framework}}
+* {{Cite web
+| author      = Geert van Horrik
+| title       = Catel - Part 4 of n: Unit Testing with Catel
+| url         = http://www.codeproject.com/KB/WPF/Catel_Part4.aspx
+}}
+* {{Cite web
+| author      = Geert van Horrik
+| title       = Catel - Part 5 of n: Building a WPF example application with Catel in 1 hour
+| url         = http://www.codeproject.com/KB/WPF/Catel_Part5.aspx
+}}
+* {{Cite web
+| author      = Raffaele Garofalo
+| title       = UI Patterns tutorials including MVVM
+| url         = http://blog.raffaeu.com/archive/2010/01/31/ui-patterns-tutorials.-mvp-mvvm-and-composite-app-with-wpf.aspx
+}}
+* {{Cite web
+| author      = David Buksbaum
+| title       = Caliburn{{Not a typo|.}}Micro – Hello World
+| url         = http://buksbaum.us/2010/08/01/caliburn-micro-hello-world/
+}}
+* {{Cite web
+| author      = David Buksbaum
+| title       = Caliburn{{Not a typo|.}}Micro the MEFtacluar
+| url         = http://buksbaum.us/2010/08/04/caliburn-micro-the-meftacluar/
+}}
+* {{Cite web
+| author      = David Buksbaum
+| title       = How To Do Logging with Caliburn{{Not a typo|.}}Micro
+| url         = http://buksbaum.us/2010/08/08/how-to-do-logging-with-caliburn-micro/
+}}
+* {{Cite web
+| author      = David Buksbaum
+| title       = Bootstrapping Caliburn{{Not a typo|.}}Micro with Autofac
+| url         = http://buksbaum.us/2010/08/20/bootstrapping-caliburn-micro-with-autofac/
+}}
+* {{Cite web
+| author      = David Buksbaum
+| title       = Caliburn{{Not a typo|.}}Micro ViewModel File Template for ReSharper
+| url         = http://buksbaum.us/2010/08/27/caliburn-micro-viewmodel-file-template-for-resharper/
+}}
+* {{Cite web
+| author      = Potix 
+| title       = ZK Java MVVM Developers Reference
+| url         = http://books.zkoss.org/wiki/ZK_Developer's_Reference/MVVM
+}}
+</div>
+
+[[Category:Software design patterns]]
+[[Category:Software architecture]]
+
+[[de:Model View ViewModel]]
+[[fr:Modèle-Vue-VueModèle]]
+[[ja:Model View ViewModel]]
+[[ru:Model-View-ViewModel]]
+[[uk:Model-View-ViewModel]]
+
